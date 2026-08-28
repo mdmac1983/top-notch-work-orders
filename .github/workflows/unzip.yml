@@ -1,0 +1,94 @@
+name: Unzip Project
+
+# One-time bootstrap workflow: if you upload the project as a .zip file
+# straight into GitHub's web UI (instead of using git on a computer), this
+# unpacks it into real files, commits them, deletes the zip, and builds the
+# APK right away so you don't have to wait for a second workflow to fire.
+#
+# After it runs once, your repo has normal source files and the regular
+# "Build APK" workflow (build-apk.yml) takes over on every future push -
+# you can ignore or delete this file at that point if you want.
+
+on:
+  push:
+    paths:
+      - "**.zip"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  unzip-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Find the uploaded zip file
+        id: find_zip
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "No .zip file found at the repo root - nothing to unpack."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found $ZIP_FILE"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "zip_file=$ZIP_FILE" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Unpack the zip into the repo root
+        if: steps.find_zip.outputs.found == 'true'
+        run: |
+          ZIP_FILE="${{ steps.find_zip.outputs.zip_file }}"
+          rm -rf _unzip_tmp
+          mkdir _unzip_tmp
+          unzip -q "$ZIP_FILE" -d _unzip_tmp
+
+          # The zip contains one top-level folder (e.g. TopNotchWorkOrders/) -
+          # move everything inside it up to the repo root, including hidden
+          # files like .github and .gitignore.
+          TOP_DIR=$(find _unzip_tmp -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          if [ -z "$TOP_DIR" ]; then
+            # Zip had no wrapping folder - its contents are already at the top level.
+            TOP_DIR="_unzip_tmp"
+          fi
+          cp -a "$TOP_DIR"/. ./
+          rm -rf _unzip_tmp "$ZIP_FILE"
+
+      - name: Commit the unpacked project
+        if: steps.find_zip.outputs.found == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Unpack project from uploaded zip" || echo "Nothing to commit"
+          git push
+
+      - name: Set up JDK 17
+        if: steps.find_zip.outputs.found == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        if: steps.find_zip.outputs.found == 'true'
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        if: steps.find_zip.outputs.found == 'true'
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        if: steps.find_zip.outputs.found == 'true'
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload debug APK
+        if: steps.find_zip.outputs.found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: TNL-WorkOrders-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
