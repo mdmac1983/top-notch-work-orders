@@ -57,6 +57,16 @@ jobs:
           cp -a "$TOP_DIR"/. ./
           rm -rf _unzip_tmp "$ZIP_FILE"
 
+          # GitHub never lets the automatic Actions token create or modify
+          # files under .github/workflows/, even with contents:write - it's
+          # a hard security restriction, not something this workflow can
+          # ask around. So: throw away whatever the zip put there and put
+          # back exactly what was already committed (this workflow file
+          # itself). Add any other workflow files (like build-apk.yml) by
+          # hand via the GitHub web UI, the same way you added this one.
+          rm -rf .github
+          git checkout -- .github
+
       - name: Commit the unpacked project
         if: steps.find_zip.outputs.found == 'true'
         run: |
