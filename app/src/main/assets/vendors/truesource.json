@@ -1,0 +1,14 @@
+{
+  "id": "truesource",
+  "name": "TrueSource",
+  "notes": "TrueSource / Affiliate Connect dispatch emails - plain bulleted text, so this is one of the more reliable ones whether you paste the email or screenshot it. No explicit Complete-By date is given, only a response window (e.g. '4 Hour Response'), so that field is left blank. The Not to Exceed Amount bullet is intentionally never pulled into the work order.",
+  "rules": [
+    { "field": "SITE_NAME", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Customer Name:\\s*([^;\\n]+)", "staticValue": "", "occurrence": 0 },
+    { "field": "SITE_ID", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Customer Name:[^\\n]*#([A-Za-z0-9-]+)", "staticValue": "", "occurrence": 0 },
+    { "field": "ADDRESS", "strategy": "AFTER_LABEL", "label": "Site Address", "startLabel": "", "endLabel": "", "pattern": "", "staticValue": "", "occurrence": 0 },
+    { "field": "CONTACT", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "On-site contact:\\s*(.+?),\\s*\\(", "staticValue": "", "occurrence": 0 },
+    { "field": "PHONE", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "On-site contact:[^\\n]*(\\(\\d{3}\\)\\s*\\d{3}-\\d{4})", "staticValue": "", "occurrence": 0 },
+    { "field": "ARRIVE_BY", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Accepted and Scheduled Tech ETA:\\s*(\\d{2}/\\d{2}/\\d{4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M)", "staticValue": "", "occurrence": 0 },
+    { "field": "PROBLEM", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "Description of Work:", "endLabel": "Customer IVR is required", "pattern": "", "staticValue": "", "occurrence": 0 }
+  ]
+}

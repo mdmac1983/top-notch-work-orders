@@ -1,0 +1,12 @@
+{
+  "id": "dynamic",
+  "name": "Dynamic",
+  "notes": "Dynamic Facility Services PO PDFs. This vendor doesn't include a separate on-site contact name/phone or a store/site ID in a consistent spot, so those are left blank for you to fill in by hand. The site name and street address are split out of the combined 'Address' block using pattern rules. If 'Complete By' comes back empty, that's usually correct - Dynamic often only gives a Response/SLA date on emergency calls, not a hard completion deadline.",
+  "rules": [
+    { "field": "SITE_NAME", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Address\\s*:\\s*([\\s\\S]*?)\\n\\d", "staticValue": "", "occurrence": 0 },
+    { "field": "ADDRESS", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Address\\s*:[\\s\\S]*?\\n(\\d[\\s\\S]*?)\\nComplete by Date", "staticValue": "", "occurrence": 0 },
+    { "field": "ARRIVE_BY", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "Response by Date :", "endLabel": "Technician(s)", "pattern": "", "staticValue": "", "occurrence": 0 },
+    { "field": "COMPLETE_BY", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "Complete by Date :", "endLabel": "Scope of Work", "pattern": "", "staticValue": "", "occurrence": 0 },
+    { "field": "PROBLEM", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "Scope of Work", "endLabel": "Site Requirements :", "pattern": "", "staticValue": "", "occurrence": 0 }
+  ]
+}

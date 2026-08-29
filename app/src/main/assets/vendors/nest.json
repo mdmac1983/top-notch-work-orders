@@ -1,0 +1,13 @@
+{
+  "id": "nest",
+  "name": "Nest",
+  "notes": "Nest work order PDFs. No named on-site contact or explicit Complete-By date is given (only the site's own phone and a Schedule Date), so those are left blank for you to fill in.",
+  "rules": [
+    { "field": "SITE_NAME", "strategy": "AFTER_LABEL", "label": "Client Details", "startLabel": "", "endLabel": "", "pattern": "", "staticValue": "", "occurrence": 0 },
+    { "field": "SITE_ID", "strategy": "AFTER_LABEL", "label": "Location#", "startLabel": "", "endLabel": "", "pattern": "", "staticValue": "", "occurrence": 0 },
+    { "field": "ADDRESS", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Location#:[\\s\\S]*?\\n(\\d[\\s\\S]*?)\\nPhone #", "staticValue": "", "occurrence": 0 },
+    { "field": "PHONE", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Phone #\\s*(\\d{3}-\\d{3}-\\d{4})", "staticValue": "", "occurrence": 0 },
+    { "field": "ARRIVE_BY", "strategy": "AFTER_LABEL", "label": "Schedule Date", "startLabel": "", "endLabel": "", "pattern": "", "staticValue": "", "occurrence": 0 },
+    { "field": "PROBLEM", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "Service Description", "endLabel": "Signatures", "pattern": "", "staticValue": "", "occurrence": 0 }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "23rd_group",
+  "name": "23rd Group",
+  "notes": "23rd Group PO PDFs (Facil-IT platform). No named on-site contact is given in this vendor's format, only the site's own phone number, so Contact is left blank for you to fill in. There's no explicit 'Complete By' date either - only a Priority window (e.g. '72 hrs') from the Service Date, which isn't auto-filled since it has to be calculated. The Not-to-Exceed / Dispatch NTE amount at the top of their PO is intentionally never pulled into the work order.",
+  "rules": [
+    { "field": "SITE_NAME", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "SERVICE LOCATION\\s*\\n([^\\n]+)", "staticValue": "", "occurrence": 0 },
+    { "field": "SITE_ID", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Loc #\\s*([^\\n]+)", "staticValue": "", "occurrence": 0 },
+    { "field": "ADDRESS", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "SERVICE LOCATION[\\s\\S]*?Loc #[^\\n]*\\n([\\s\\S]*?)\\nPhone #", "staticValue": "", "occurrence": 0 },
+    { "field": "PHONE", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "SERVICE LOCATION[\\s\\S]*?Phone #\\s*(\\d{3}-\\d{3}-\\d{4})", "staticValue": "", "occurrence": 0 },
+    { "field": "ARRIVE_BY", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Service Date\\s*(\\d{1,2}/\\d{1,2}/\\d{2,4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M)", "staticValue": "", "occurrence": 0 },
+    { "field": "PROBLEM", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "SERVICE DESCRIPTION", "endLabel": "BILLING INSTRUCTIONS", "pattern": "", "staticValue": "", "occurrence": 0 }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "frontstreet",
+  "name": "FrontStreet",
+  "notes": "FrontStreet Facility Solutions PO PDFs (same Facil-IT platform/layout as 23rd Group, just no separate 'Billing Instructions' section - their whole Service Description section including IVR/photo/quote instructions gets pulled into Problem Reported, which runs a bit long but is all genuinely job-relevant here). No named on-site contact or explicit Complete By date is given, so those are left blank. The Dispatch NTE amount at the top is intentionally never pulled into the work order.",
+  "rules": [
+    { "field": "SITE_NAME", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "SERVICE LOCATION\\s*\\n([^\\n]+)", "staticValue": "", "occurrence": 0 },
+    { "field": "SITE_ID", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Loc #\\s*([^\\n]+)", "staticValue": "", "occurrence": 0 },
+    { "field": "ADDRESS", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "SERVICE LOCATION[\\s\\S]*?Loc #[^\\n]*\\n([\\s\\S]*?)\\nPhone #", "staticValue": "", "occurrence": 0 },
+    { "field": "PHONE", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "SERVICE LOCATION[\\s\\S]*?Phone #\\s*(\\d{3}-\\d{3}-\\d{4})", "staticValue": "", "occurrence": 0 },
+    { "field": "ARRIVE_BY", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Service Date\\s*(\\d{1,2}/\\d{1,2}/\\d{2,4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M)", "staticValue": "", "occurrence": 0 },
+    { "field": "PROBLEM", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "SERVICE DESCRIPTION", "endLabel": "Print Date:", "pattern": "", "staticValue": "", "occurrence": 0 }
+  ]
+}

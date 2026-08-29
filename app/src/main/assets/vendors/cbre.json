@@ -1,0 +1,15 @@
+{
+  "id": "cbre",
+  "name": "CBRE",
+  "notes": "CBRE Affiliate Connect work order page - you'll usually be working from a screenshot rather than a clean PDF, so this one is the most likely to need a tweak. IMPORTANT: their work order page is wider than a phone screen, so a portrait screenshot can crop off real data on the right (like the full Complete-By date or Provider Phone). Before screenshotting, try rotating your phone to landscape or using 'Desktop site' in the browser so the whole table is visible. If a field comes back wrong after a real screenshot, paste that screenshot's OCR text into Test Extraction below to see exactly how it broke into lines, then adjust the rule to match. The DNE (Do Not Exceed) amount is intentionally never pulled into the work order.",
+  "rules": [
+    { "field": "SITE_NAME", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Location Description[^\\n]*\\n([^:\\n]+):", "staticValue": "", "occurrence": 0 },
+    { "field": "SITE_ID", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Location ID[\\s\\S]{0,60}?([A-Z]{2,5}-\\d{3,6})", "staticValue": "", "occurrence": 0 },
+    { "field": "ADDRESS", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Address[\\s\\S]*?\\n(\\d[^\\n]*\\d{5})", "staticValue": "", "occurrence": 0 },
+    { "field": "CONTACT", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Requesting Contact[^\\n]*\\n([^(\\n]+?)\\s*\\(", "staticValue": "", "occurrence": 0 },
+    { "field": "PHONE", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Alternate Contact\\s*\\n[^(\\n]*(\\(\\d{3}\\)\\s*\\d{3}-\\d{4})", "staticValue": "", "occurrence": 0 },
+    { "field": "ARRIVE_BY", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Arrive on site by[\\s\\S]{0,80}?(\\d{2}/\\d{2}/\\d{4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M\\s*\\w*)", "staticValue": "", "occurrence": 0 },
+    { "field": "COMPLETE_BY", "strategy": "REGEX", "label": "", "startLabel": "", "endLabel": "", "pattern": "Arrive on site by[\\s\\S]*?\\d{2}/\\d{2}/\\d{4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M\\s*\\w*[\\s\\S]*?(\\d{2}/\\d{2}/\\d{4}\\s+\\d{1,2}:\\d{2}\\s*[AP]M\\s*\\w*)", "staticValue": "", "occurrence": 0 },
+    { "field": "PROBLEM", "strategy": "BETWEEN_LABELS", "label": "", "startLabel": "WO Description", "endLabel": "Accept", "pattern": "", "staticValue": "", "occurrence": 0 }
+  ]
+}
