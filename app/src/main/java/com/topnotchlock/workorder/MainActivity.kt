@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,6 +19,7 @@ import com.topnotchlock.workorder.ui.nav.Routes
 import com.topnotchlock.workorder.ui.screens.HistoryScreen
 import com.topnotchlock.workorder.ui.screens.HomeScreen
 import com.topnotchlock.workorder.ui.screens.NewWorkOrderScreen
+import com.topnotchlock.workorder.ui.screens.PdfViewerScreen
 import com.topnotchlock.workorder.ui.screens.ReviewEditScreen
 import com.topnotchlock.workorder.ui.screens.SettingsScreen
 import com.topnotchlock.workorder.ui.screens.VendorEditScreen
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         handleIncomingIntent(intent)
 
@@ -70,7 +73,8 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(Routes.HOME) {
                                     popUpTo(Routes.HOME) { inclusive = true }
                                 }
-                            }
+                            },
+                            onOpenPdf = { file -> navController.navigate(Routes.pdfView(file.absolutePath)) }
                         )
                     }
                     composable(Routes.VENDORS) {
@@ -92,10 +96,25 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Routes.HISTORY) {
-                        HistoryScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+                        HistoryScreen(
+                            viewModel = viewModel,
+                            onBack = { navController.popBackStack() },
+                            onOpenPdf = { file -> navController.navigate(Routes.pdfView(file.absolutePath)) }
+                        )
                     }
                     composable(Routes.SETTINGS) {
                         SettingsScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+                    }
+                    composable(
+                        Routes.PDF_VIEW,
+                        arguments = listOf(navArgument("path") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val encodedPath = backStackEntry.arguments?.getString("path") ?: ""
+                        PdfViewerScreen(
+                            viewModel = viewModel,
+                            filePath = Uri.decode(encodedPath),
+                            onBack = { navController.popBackStack() }
+                        )
                     }
                 }
             }

@@ -1,13 +1,17 @@
 package com.topnotchlock.workorder.pdfgen
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import com.topnotchlock.workorder.R
 import com.topnotchlock.workorder.data.ACTION_REQUIRED_ITEMS
 import com.topnotchlock.workorder.data.WorkOrder
 import java.io.File
@@ -26,9 +30,11 @@ object WorkOrderPdfGenerator {
     private const val PAGE_WIDTH = 612
     private const val PAGE_HEIGHT = 792
 
-    private const val COMPANY_HEADER = "TOP NOTCH LOCK (800)-381-7033"
+    private const val DEFAULT_COMPANY_NAME = "TOP NOTCH LOCK"
+    private const val DEFAULT_COMPANY_PHONE = "(800)-381-7033"
 
     private sealed class Block {
+        data object Logo : Block()
         data class Title(val text: String) : Block()
         data class SectionHeader(val text: String) : Block()
         data class BodyLine(val text: String) : Block()
@@ -43,18 +49,29 @@ object WorkOrderPdfGenerator {
         val bodyPt: Float,
         val lineSpacingMult: Float,
         val sectionGap: Float,
-        val margin: Float
+        val margin: Float,
+        val logoWidthPt: Float
     )
 
     private val BASE_SIZES = Sizes(
         titlePt = 17f, headerPt = 13f, bodyPt = 11f,
-        lineSpacingMult = 1.18f, sectionGap = 12f, margin = 36f
+        lineSpacingMult = 1.18f, sectionGap = 12f, margin = 36f,
+        logoWidthPt = 145f
     )
     private const val MIN_SCALE = 0.55f
     private const val SCALE_STEP = 0.04f
 
     fun generate(context: Context, workOrder: WorkOrder, outputFile: File): File {
-        val blocks = buildBlocks(workOrder)
+        val logoBitmap = runCatching {
+            BitmapFactory.decodeResource(context.resources, R.drawable.logo_full)
+        }.getOrNull()
+        val logoAspect = if (logoBitmap != null && logoBitmap.width > 0) {
+            logoBitmap.height.toFloat() / logoBitmap.width.toFloat()
+        } else {
+            0.7f
+        }
+
+        val blocks = buildBlocks(workOrder, hasLogo = logoBitmap != null)
         val document = PdfDocument()
 
         var scale = 1f
@@ -62,7 +79,7 @@ object WorkOrderPdfGenerator {
         while (scale >= MIN_SCALE) {
             val sizes = scaled(BASE_SIZES, scale)
             val contentWidth = PAGE_WIDTH - 2 * sizes.margin
-            val height = measureTotalHeight(blocks, sizes, contentWidth)
+            val height = measureTotalHeight(blocks, sizes, contentWidth, logoAspect)
             val maxHeight = PAGE_HEIGHT - 2 * sizes.margin
             if (height <= maxHeight) {
                 chosen = sizes to height
@@ -75,17 +92,38 @@ object WorkOrderPdfGenerator {
         val finalSizes = chosen?.first ?: scaled(BASE_SIZES, MIN_SCALE)
 
         val page = document.startPage(PdfDocument.PageInfo.Builder(PAGE_WIDTH, PAGE_HEIGHT, 1).create())
-        drawBlocks(page.canvas, blocks, finalSizes)
+        if (logoBitmap != null) {
+            drawWatermark(page.canvas, logoBitmap, logoAspect)
+        }
+        drawBlocks(page.canvas, blocks, finalSizes, logoBitmap, logoAspect)
         document.finishPage(page)
 
         FileOutputStream(outputFile).use { document.writeTo(it) }
         document.close()
+        logoBitmap?.recycle()
         return outputFile
     }
 
-    private fun buildBlocks(wo: WorkOrder): List<Block> {
+    /** Large, faded copy of the logo centered on the page, behind everything else. */
+    private fun drawWatermark(canvas: Canvas, bitmap: Bitmap, aspect: Float) {
+        val width = PAGE_WIDTH * 0.62f
+        val height = width * aspect
+        val left = (PAGE_WIDTH - width) / 2f
+        val top = (PAGE_HEIGHT - height) / 2f
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply { alpha = 26 }
+        canvas.drawBitmap(bitmap, null, RectF(left, top, left + width, top + height), paint)
+    }
+
+    private fun buildBlocks(wo: WorkOrder, hasLogo: Boolean): List<Block> {
         val list = mutableListOf<Block>()
-        list += Block.Title(COMPANY_HEADER)
+        val companyName = wo.companyName.ifBlank { DEFAULT_COMPANY_NAME }
+        val companyPhone = wo.companyPhone.ifBlank { DEFAULT_COMPANY_PHONE }
+
+        if (hasLogo) {
+            list += Block.Logo
+            list += Block.Spacer(0.3f)
+        }
+        list += Block.Title("$companyName $companyPhone")
         list += Block.Spacer(0.6f)
         list += Block.BodyLine("WORK ORDER #: ${wo.woNumber}    -    DATE: ${wo.date}")
         list += Block.Spacer()
@@ -126,7 +164,8 @@ object WorkOrderPdfGenerator {
         bodyPt = base.bodyPt * scale,
         lineSpacingMult = base.lineSpacingMult,
         sectionGap = base.sectionGap * scale,
-        margin = if (scale < 0.7f) base.margin * 0.75f else base.margin
+        margin = if (scale < 0.7f) base.margin * 0.75f else base.margin,
+        logoWidthPt = base.logoWidthPt * scale
     )
 
     private fun paintFor(block: Block, sizes: Sizes): TextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -144,6 +183,7 @@ object WorkOrderPdfGenerator {
         is Block.BodyLine -> block.text
         is Block.ChecklistItem -> block.text
         is Block.RuledLine -> block.label
+        is Block.Logo -> ""
         is Block.Spacer -> ""
     }
 
@@ -163,11 +203,12 @@ object WorkOrderPdfGenerator {
         return builder.build()
     }
 
-    private fun measureTotalHeight(blocks: List<Block>, sizes: Sizes, contentWidth: Float): Float {
+    private fun measureTotalHeight(blocks: List<Block>, sizes: Sizes, contentWidth: Float, logoAspect: Float): Float {
         var total = 0f
         val width = contentWidth.toInt().coerceAtLeast(1)
         blocks.forEach { block ->
             total += when (block) {
+                is Block.Logo -> sizes.logoWidthPt * logoAspect
                 is Block.Spacer -> sizes.sectionGap * block.weight
                 is Block.RuledLine -> layoutFor(block, sizes, width).height.toFloat() + sizes.bodyPt * 0.6f
                 else -> layoutFor(block, sizes, width).height.toFloat()
@@ -176,12 +217,31 @@ object WorkOrderPdfGenerator {
         return total
     }
 
-    private fun drawBlocks(canvas: Canvas, blocks: List<Block>, sizes: Sizes) {
+    private fun drawBlocks(
+        canvas: Canvas,
+        blocks: List<Block>,
+        sizes: Sizes,
+        logoBitmap: Bitmap?,
+        logoAspect: Float
+    ) {
         val width = (PAGE_WIDTH - 2 * sizes.margin).toInt().coerceAtLeast(1)
         var y = sizes.margin
 
         blocks.forEach { block ->
             when (block) {
+                is Block.Logo -> {
+                    val logoHeight = sizes.logoWidthPt * logoAspect
+                    if (logoBitmap != null) {
+                        val left = (PAGE_WIDTH - sizes.logoWidthPt) / 2f
+                        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+                        canvas.drawBitmap(
+                            logoBitmap, null,
+                            RectF(left, y, left + sizes.logoWidthPt, y + logoHeight),
+                            paint
+                        )
+                    }
+                    y += logoHeight
+                }
                 is Block.Spacer -> {
                     y += sizes.sectionGap * block.weight
                 }

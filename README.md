@@ -28,6 +28,17 @@ order PDF, ready to share or print.
 - Signature lines (Technician, Manager, Date, Time In/Out) print as blank
   underscores to be signed by hand after printing, matching your existing
   paper workflow.
+- **Branded end to end.** The Top Notch Lock logo is the app icon, the splash
+  screen you see on launch, the letterhead-style logo at the top of every
+  generated PDF, and a large faded watermark behind the page content.
+- **Supports more than one business.** Add companies (name + phone) under
+  **Settings > Companies**; a dropdown on the Review screen picks which one's
+  name/phone prints in a given work order's header - handy if Top Notch Lock
+  isn't the only business you run work orders through.
+- **Built-in PDF viewer.** Tap **View PDF** (on Review or from History) to
+  read/zoom a work order right in the app - no separate PDF reader app
+  required. **Share** is still there for handing it off to another app, and
+  **Save to Downloads** copies it into your phone's regular Downloads folder.
 
 ---
 
@@ -146,10 +157,13 @@ patterns) built from your real vendors.
 1. **New Work Order** > pick the vendor > paste the email text (or import
    the PDF/screenshot/photo).
 2. Review the auto-filled fields - anything the app couldn't find is
-   outlined and labeled "not found" so you can type it in by hand.
-3. **Generate PDF & Share** - creates the one-page PDF, saves it to
-   **History**, and opens Android's share sheet so you can text/email/print
-   it immediately.
+   outlined and labeled "not found" so you can type it in by hand. If this
+   job is under a different company than the default, pick it from the
+   **Company** dropdown at the top first.
+3. **Generate PDF** - creates the one-page PDF and saves it to **History**.
+   Then **View PDF** to read it in the app, **Share PDF** to hand it to
+   another app (text/email/print), or open it later from **History** and use
+   **Save to Downloads** there.
 
 Sharing an email or screenshot directly from Gmail/Outlook/your gallery's
 share menu into "TNL Work Orders" jumps straight to step 2 with the vendor
@@ -182,3 +196,21 @@ app/src/test/                  Unit tests for the parsing engine, including
   orders ever get the same number, at the cost of occasionally skipping one.
 - Signature lines print blank for signing on paper (no in-app signature pad)
   - see Settings if you'd like that changed later.
+- Generated PDFs are stored in the app's own private storage, so History
+  always has something to open - they're not affected by Android clearing
+  cached data under low storage. They (and History) are still cleared if you
+  uninstall the app or manually clear its storage in Android's App info
+  screen, same as any app's data. Use **Save to Downloads** on a work order
+  you want to keep somewhere outside the app entirely.
+- **This update resets History once.** Adding multi-company support required
+  a small database change, and the simplest safe way to apply it is to clear
+  old History rows on upgrade rather than migrate them - after installing
+  this version, History starts empty again, but every 6-vendor parsing rule,
+  your WO# counter/prefix, and all vendor customizations are untouched.
+- No storage permission is needed for OCR, generating, viewing, or sharing
+  PDFs - those all use the app's own private storage plus Android's
+  FileProvider/share-sheet mechanisms, which don't need it. The one time it
+  matters is **Save to Downloads** on Android 8-9 (Pie and below); the app
+  asks for it right when you tap that button. Android 10+ saves to Downloads
+  through the OS's MediaStore API instead, which needs no permission prompt
+  at all.

@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [WorkOrderEntity::class], version = 1, exportSchema = false)
+@Database(entities = [WorkOrderEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workOrderDao(): WorkOrderDao
 
@@ -18,7 +18,13 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "tnl_work_orders.db"
-                ).build().also { INSTANCE = it }
+                )
+                    // Bumped for the companyName/companyPhone columns added alongside
+                    // multi-company support. History is small and easily regenerated,
+                    // so a destructive migration (clears old History rows once on
+                    // upgrade, this update only) is simpler than a manual migration.
+                    .fallbackToDestructiveMigration()
+                    .build().also { INSTANCE = it }
             }
     }
 }

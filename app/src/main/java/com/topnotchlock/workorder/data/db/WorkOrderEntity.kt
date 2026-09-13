@@ -9,6 +9,8 @@ data class WorkOrderEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val woNumber: String,
     val date: String,
+    val companyName: String = "",
+    val companyPhone: String = "",
     val siteName: String,
     val siteId: String,
     val address: String,
@@ -25,6 +27,8 @@ data class WorkOrderEntity(
     fun toWorkOrder(): WorkOrder = WorkOrder(
         woNumber = woNumber,
         date = date,
+        companyName = companyName,
+        companyPhone = companyPhone,
         siteName = siteName,
         siteId = siteId,
         address = address,
@@ -42,6 +46,8 @@ data class WorkOrderEntity(
             WorkOrderEntity(
                 woNumber = wo.woNumber,
                 date = wo.date,
+                companyName = wo.companyName,
+                companyPhone = wo.companyPhone,
                 siteName = wo.siteName,
                 siteId = wo.siteId,
                 address = wo.address,

@@ -9,6 +9,8 @@ package com.topnotchlock.workorder.data
 data class WorkOrder(
     val woNumber: String = "",
     val date: String = "",
+    val companyName: String = "",
+    val companyPhone: String = "",
     val siteName: String = "",
     val siteId: String = "",
     val address: String = "",

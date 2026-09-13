@@ -3,4 +3,5 @@
     <color name="tnl_gold">#C9A227</color>
     <color name="tnl_white">#FFFFFF</color>
     <color name="tnl_black">#1A1A1A</color>
+    <color name="tnl_splash_bg">#0A0A0A</color>
 </resources>

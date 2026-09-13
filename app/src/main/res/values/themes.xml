@@ -3,4 +3,14 @@
         <item name="android:statusBarColor" tools:targetApi="l">@color/tnl_navy</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
     </style>
+
+    <!-- Launch theme: shown the instant the app icon is tapped, before MainActivity's
+         first frame is ready. Shows the full Top Notch Lock logo on a black background,
+         then hands off to the normal app theme above. -->
+    <style name="Theme.TopNotchWorkOrders.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/tnl_splash_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/tnl_splash_bg</item>
+        <item name="postSplashScreenTheme">@style/Theme.TopNotchWorkOrders</item>
+    </style>
 </resources>

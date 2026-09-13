@@ -5,6 +5,13 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Optional: snap a photo of a printed/screen email instead of importing a file -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Only needed to save a PDF into the public Downloads folder on Android 8-9;
+         Android 10+ (our targetSdk) writes to Downloads via MediaStore with no
+         permission required at all, so this is requested at runtime and only
+         on those older versions. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -23,7 +30,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.TopNotchWorkOrders">
+            android:theme="@style/Theme.TopNotchWorkOrders.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
