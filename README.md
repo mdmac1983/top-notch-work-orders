@@ -39,6 +39,13 @@ order PDF, ready to share or print.
   read/zoom a work order right in the app - no separate PDF reader app
   required. **Share** is still there for handing it off to another app, and
   **Save to Downloads** copies it into your phone's regular Downloads folder.
+- **Version + changelog in Settings.** Every build bumps the version by 0.1,
+  and Settings > What's new lists exactly what changed in each one - so you
+  can always tell whether a freshly installed APK actually has your latest
+  changes.
+- **Signed release build.** APKs are a proper signed release build (not
+  debug), using a signing key that's checked into this repo so every future
+  build can update in place over the last one.
 
 ---
 
@@ -60,14 +67,21 @@ That's it - pushing to `main` automatically builds the APK (next section).
 
 ## 2. Get the APK from GitHub (no Android Studio needed)
 
-This repo includes a GitHub Actions workflow (`.github/workflows/build-apk.yml`)
-that builds a debug APK on every push:
+This repo includes GitHub Actions workflows that build a **signed release
+APK** (not a debug build) on every push - `.github/workflows/build-apk.yml`
+for a normal git push, or `.github/workflows/unzip.yml` when you upload the
+project as a `.zip` through GitHub's web UI:
 
 1. On GitHub, open the **Actions** tab of your repo.
-2. Click the latest **Build APK** run (it starts automatically after you push).
+2. Click the latest run. **If you uploaded a `.zip`, use the "Unzip
+   Project" run** - not "Build APK." Both may appear for the same push, but
+   only "Unzip Project" is building from your actual new files; "Build APK"
+   ignores zip uploads entirely as of this version, so there shouldn't be a
+   stale one to confuse with anymore, but if you ever see both, "Unzip
+   Project" is the one with your changes.
 3. Once it finishes (green check, a few minutes), scroll to **Artifacts** at
-   the bottom and download **TNL-WorkOrders-debug-apk**. It's a zip
-   containing `app-debug.apk`.
+   the bottom and download **TNL-WorkOrders-release-apk**. It's a zip
+   containing `app-release.apk`.
 4. Transfer that APK to your Android phone (email it to yourself, Google
    Drive, USB, etc.) and tap it to install. Android will warn about
    "installing from unknown sources" the first time - that's expected for an
@@ -75,6 +89,15 @@ that builds a debug APK on every push:
 
 You can also trigger a build manually anytime from **Actions > Build APK >
 Run workflow**.
+
+**One-time step if you already have the app installed from before this
+version:** it was previously a debug build, and this version switches to a
+signed release build under a different signing key, so Android will refuse
+to install the new one over the old one ("app not installed - conflicts
+with an existing package"). Uninstall the old app once, then install this
+release APK. Every release build from here on reuses the same signing key
+(`keystore/release.keystore`, committed in this repo), so future updates
+will install right over each other with no more uninstalling.
 
 ### Building it yourself instead (optional)
 

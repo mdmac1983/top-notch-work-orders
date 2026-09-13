@@ -4,6 +4,8 @@ package com.topnotchlock.workorder.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -12,19 +14,28 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.topnotchlock.workorder.data.CHANGELOG
 import com.topnotchlock.workorder.data.Company
 import com.topnotchlock.workorder.ui.MainViewModel
 
 @Composable
 fun SettingsScreen(viewModel: MainViewModel, onBack: () -> Unit) {
+    val context = LocalContext.current
     val generator = viewModel.woNumberGenerator
     var prefix by remember { mutableStateOf(generator.prefix) }
     var nextNumber by remember { mutableStateOf(generator.nextNumber.toString()) }
     var saved by remember { mutableStateOf(false) }
     var showAddCompany by remember { mutableStateOf(false) }
     var editingCompany by remember { mutableStateOf<Company?>(null) }
+    var showChangelog by remember { mutableStateOf(false) }
     val companies = viewModel.companies
+    val versionName = remember {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull() ?: CHANGELOG.firstOrNull()?.version ?: "?"
+    }
 
     Scaffold(topBar = {
         TopAppBar(
@@ -119,8 +130,51 @@ fun SettingsScreen(viewModel: MainViewModel, onBack: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
                 Text("Saved.", style = MaterialTheme.typography.bodySmall)
             }
+
+            HorizontalDivider(Modifier.padding(vertical = 20.dp))
+
+            Text("About", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Text("Version $versionName", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = { showChangelog = true }, modifier = Modifier.fillMaxWidth()) {
+                Text("What's new")
+            }
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    if (showChangelog) {
+        AlertDialog(
+            onDismissRequest = { showChangelog = false },
+            title = { Text("What's new") },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    CHANGELOG.forEachIndexed { index, entry ->
+                        Text(
+                            "Version ${entry.version} - ${entry.date}",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        entry.notes.forEach { note ->
+                            Text(
+                                "- $note",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                        if (index != CHANGELOG.lastIndex) {
+                            Spacer(Modifier.height(12.dp))
+                            HorizontalDivider()
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showChangelog = false }) { Text("Close") }
+            }
+        )
     }
 
     if (showAddCompany) {
